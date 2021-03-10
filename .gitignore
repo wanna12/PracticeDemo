@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+/ASPDOTNET.DelegateProject/.vs/ASPDOTNET.DelegateProject
+/.vs
+/ASPDOTNET.DelegateProject/bin/Debug/netcoreapp3.1
+/ASPDOTNET.Delegate/.vs/ASPDOTNET.Delegate/v16
+/ASPDOTNET.Delegate/obj
+/ASPDOTNET.Delegate/bin/Debug/netcoreapp3.1
