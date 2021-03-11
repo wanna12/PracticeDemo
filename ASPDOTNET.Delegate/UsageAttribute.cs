@@ -2,16 +2,11 @@
 
 namespace ASPDOTNET.Delegate
 {
-    public class BeforeMethodAttribute:AbstractMethodAttribute
+    public class UsageAttribute:AbstractMethodAttribute
     {
         public override Action doSomething(Action action)
         {
-            //Console.WriteLine("do something before method");
-            Action actionRes=new Action(() =>
-            {
-                action.Invoke();
-            });
-            return actionRes;
+            return new Action(() => { action.Invoke(); });
         }
 
         public override void beforeMethod()
@@ -24,7 +19,7 @@ namespace ASPDOTNET.Delegate
             Console.WriteLine(afterMsg);
         }
 
-        public BeforeMethodAttribute(string beforeMsg, string afterMsg)
+        public UsageAttribute(string beforeMsg, string afterMsg)
         {
             this.beforeMsg = beforeMsg;
             this.afterMsg = afterMsg;

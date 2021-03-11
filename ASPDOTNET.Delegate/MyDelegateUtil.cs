@@ -21,10 +21,20 @@ namespace ASPDOTNET.Delegate
                 var list = methodInfo.GetCustomAttributes<AbstractMethodAttribute>();
                 foreach (AbstractMethodAttribute attribute in list)
                 {
-                    attribute.doSomething(action);
+                    attribute.beforeMethod();
+                    action=attribute.doSomething(action);
+                    
                 }
             }
             action.Invoke();
+            if (methodInfo.IsDefined(typeof(AbstractMethodAttribute), true))
+            {
+                var list = methodInfo.GetCustomAttributes<AbstractMethodAttribute>();
+                foreach (AbstractMethodAttribute attribute in list)
+                {
+                    attribute.afterMethod();
+                }
+            }
         }
     }
 }
