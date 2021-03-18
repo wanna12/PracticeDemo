@@ -12,7 +12,10 @@ namespace ConsoleApp1.TaskPratice
         /// <summary>
         /// 日志队列
         /// </summary>
-        private static Queue<LogModel> queue=new Queue<LogModel>();
+        private static Queue<LogModel> queue = new Queue<LogModel>();
+
+        //锁
+        private static readonly object obj = new object();
 
         private static LogHelper instance = new LogHelper();
         public static LogHelper CurrentInstance
@@ -29,17 +32,22 @@ namespace ConsoleApp1.TaskPratice
         /// 写日志
         /// </summary>
         /// <param name="model"></param>
-        public void LogActionInfo(LogModel model)
+        public void LogActionInfo(string msg, int status, int errcode)
         {
-            queue.Enqueue(model);
+            lock (obj)
+            {
+                LogModel model = new LogModel(msg, status, errcode);
+                queue.Enqueue(model);
+            }
         }
+
 
         /// <summary>
         /// 启动
         /// </summary>
         private void start()
         {
-            Thread thread=new Thread(executeQueue);
+            Thread thread = new Thread(executeQueue);
             thread.IsBackground = true;//后台线程
             thread.Start();
         }
@@ -51,19 +59,30 @@ namespace ConsoleApp1.TaskPratice
         {
             while (true)
             {
-                if (queue.Count>0)
+
+
+                if (queue.Count > 0)
                 {
                     //队列有任务
                     try
                     {
-                        dequeue();//取出任务执行
+
+                        lock (obj)
+                        {
+                            if (queue.Count > 0)
+                                dequeue();//取出任务执行
+                        }
+
                     }
                     catch (Exception e)
                     {
+                        Console.WriteLine($"{e.Message}");
+                        Console.WriteLine(e.StackTrace);
                         throw;
                     }
                 }
             }
+
         }
 
         /// <summary>
@@ -71,7 +90,7 @@ namespace ConsoleApp1.TaskPratice
         /// </summary>
         private void dequeue()
         {
-            while (queue.Count>0)
+            while (queue.Count > 0)
             {
                 //队列中有任务，取出
                 try
@@ -81,7 +100,8 @@ namespace ConsoleApp1.TaskPratice
                 }
                 catch (Exception e)
                 {
-                    throw;
+                    Console.WriteLine($"{e.Message}");
+                    Console.WriteLine(e.StackTrace);
                 }
             }
         }
@@ -106,8 +126,8 @@ namespace ConsoleApp1.TaskPratice
                 File.Create(logPath);
             }
             //写入日志
-            string content = JsonConvert.SerializeObject(model);
-            using (StreamWriter writer=new StreamWriter(logPath,true))
+            string content = $"{DateTime.Now:yyyy/MM/dd HH:m:ss} - {JsonConvert.SerializeObject(model)}";
+            using (StreamWriter writer = new StreamWriter(logPath, true))
             {
                 writer.WriteLine(content);
             }

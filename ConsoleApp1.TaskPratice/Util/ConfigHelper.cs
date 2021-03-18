@@ -25,7 +25,7 @@ namespace ConsoleApp1.TaskPratice
         /// 从配置中读取人物故事线
         /// </summary>
         /// <returns></returns>
-        public List<StoryModel> getStoryConfig()
+        public List<StoryModel> GetStoryConfig()
         {
             XmlDocument doc=new XmlDocument();
             doc.Load(configPath);
