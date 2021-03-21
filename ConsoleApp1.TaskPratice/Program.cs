@@ -18,8 +18,7 @@ namespace ConsoleApp1.TaskPratice
         {
             try
             {
-                Stopwatch stopwatch = new Stopwatch();
-                stopwatch.Start();
+                
 
                 TaskFactory taskFactory = new TaskFactory();
                 List<Task<string>> pTasks = new List<Task<string>>();
@@ -31,6 +30,8 @@ namespace ConsoleApp1.TaskPratice
                 //获取人物线配置内容
                 List<StoryModel> storyList = ConfigHelper.CurrentInstance.GetStoryConfig();
 
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
 
                 foreach (StoryModel storyModel in storyList)
                 {
@@ -38,51 +39,42 @@ namespace ConsoleApp1.TaskPratice
                     //父线程
                     Task<string> PTask = (taskFactory.StartNew((() =>
                       {
-                          if (tokenSource.IsCancellationRequested)
-                          {
-                              throw new AggregateException();
-                          }
-
                           ManualResetEvent resetEvent = new ManualResetEvent(false);
                           foreach (string eventName in storyModel.EventList)
                           {
                               string ename = eventName;
-
-                              //添加到父线程，父线程要等待子线程执行完毕才会执行
-                              evenTasks.Add(taskFactory.StartNew(() =>
+                              if (!tokenSource.IsCancellationRequested)
                               {
-                                  if (tokenSource.IsCancellationRequested)
-                                  {
-                                      throw new AggregateException();
-                                  }
-                                  FinishEvent(name, ename, tokenSource);
-                                  resetEvent.Set();
-                                  resetEvent.Reset();
-                                  if (tokenSource.IsCancellationRequested)
-                                  {
-                                      throw new AggregateException();
-                                  }
-                                  return name;
-                              }, tokenSource.Token, TaskCreationOptions.AttachedToParent, TaskScheduler.Default));
-                              taskFactory.ContinueWhenAny(evenTasks.ToArray(),
-                                  (task =>
-                                  {
-                                      if (!firstEventFinished)
-                                      {
-                                          firstEventFinished = true;
-                                          string content = "天龙八部就此拉开序幕。。。。";
-                                          Console.WriteLine(content);
-                                          LogHelper.CurrentInstance.LogActionInfo(content, 0, 0);
-                                      }
 
-                                  }), tokenSource.Token);
-                              resetEvent.WaitOne();
-                              
+                                  //添加到父线程，父线程要等待子线程执行完毕才会执行
+                                  evenTasks.Add(taskFactory.StartNew(() =>
+                                  {
+                                      FinishEvent(name, ename, tokenSource);
+                                      resetEvent.Set();
+                                      resetEvent.Reset();
+                                      return name;
+                                  }, tokenSource.Token, TaskCreationOptions.AttachedToParent, TaskScheduler.Current));
+                                  taskFactory.ContinueWhenAny(evenTasks.ToArray(),
+                                      (task =>
+                                      {
+                                          if (!firstEventFinished)
+                                          {
+                                              firstEventFinished = true;
+                                              string content = "天龙八部就此拉开序幕。。。。";
+                                              Console.WriteLine(content);
+                                              LogHelper.CurrentInstance.LogActionInfo(content, 0, 0);
+                                          }
+
+                                      }), tokenSource.Token);
+                                  resetEvent.WaitOne();
+
+                              }
+                              else
+                              {
+                                  break;
+                              }
                           }
-                          if (tokenSource.IsCancellationRequested)
-                          {
-                              throw new AggregateException();
-                          }
+
                           return name;
 
                       }), tokenSource.Token));
@@ -96,20 +88,17 @@ namespace ConsoleApp1.TaskPratice
                 {
                     while (!tokenSource.IsCancellationRequested)
                     {
-                        int timespan = new Random().Next(0, 10000);
+                        int timespan = new Random(Guid.NewGuid().GetHashCode()).Next(0,10000);
                         LogHelper.CurrentInstance.LogActionInfo($"Thread={Thread.CurrentThread.ManagedThreadId} 监控线程间隔时间{timespan}ms", 0, 0);
                         if (timespan == DateTime.Now.Year)
                         {
                             tokenSource.Cancel();
+                            break;
                         }
                     }
-
-                    if (tokenSource.IsCancellationRequested)
-                    {
-                        string content = "天降雷霆灭世，天龙八部的故事就此结束....";
-                        Console.WriteLine($"ThreadId={Thread.CurrentThread.ManagedThreadId} {content}");
-                        LogHelper.CurrentInstance.LogActionInfo(content, 0, 0);
-                    }
+                    string content = "天降雷霆灭世，天龙八部的故事就此结束....";
+                    Console.WriteLine($"ThreadId={Thread.CurrentThread.ManagedThreadId} {content}");
+                    LogHelper.CurrentInstance.LogActionInfo(content, 0, 0);
                 }), tokenSource.Token);
 
                 taskFactory.ContinueWhenAny(pTasks.ToArray(), (task =>

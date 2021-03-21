@@ -59,26 +59,21 @@ namespace ConsoleApp1.TaskPratice
         {
             while (true)
             {
-
-
-                if (queue.Count > 0)
+                lock (obj)
                 {
-                    //队列有任务
-                    try
+                    if (queue.Count > 0)
                     {
-
-                        lock (obj)
+                        //队列有任务
+                        try
                         {
-                            if (queue.Count > 0)
-                                dequeue();//取出任务执行
+                            dequeue();//取出任务执行
                         }
-
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine($"{e.Message}");
-                        Console.WriteLine(e.StackTrace);
-                        throw;
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"{e.Message}");
+                            Console.WriteLine(e.StackTrace);
+                            throw;
+                        }
                     }
                 }
             }
