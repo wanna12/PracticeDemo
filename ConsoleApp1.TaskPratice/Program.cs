@@ -18,8 +18,8 @@ namespace ConsoleApp1.TaskPratice
         {
             try
             {
+        
                 
-
                 TaskFactory taskFactory = new TaskFactory();
                 List<Task<string>> pTasks = new List<Task<string>>();
                 List<Task<string>> evenTasks = new List<Task<string>>();

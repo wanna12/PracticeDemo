@@ -68,18 +68,7 @@ namespace WindowsFormsApp1.Threads
 
         }
 
-        private Func<T> ThreadWithReturn<T>(Func<T> func)
-        {
-            T res = default(T);
-
-            ThreadStart threadStart = () => { res=func.Invoke(); };
-            Thread thread=new Thread(threadStart);
-            thread.Start();
-            return new Func<T>((() => { 
-                thread.Join();
-                return res;
-            }));
-        }
+       
 
         private void button2_Click(object sender, EventArgs e)
         {
@@ -185,6 +174,69 @@ namespace WindowsFormsApp1.Threads
                     Console.WriteLine(exception);
                     
                 }
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            Func<int> func = () =>
+            {
+                Thread.Sleep(3000);
+                Console.WriteLine("异步取值，异步返回，是否卡顿");
+                Thread.Sleep(3000);
+                return 3000;
+            };
+            TaskFactory factory=new TaskFactory();
+            factory.StartNew((() =>
+            {
+                Func<int> resFunc = this.ThreadWithReturn(func);
+                int res = resFunc.Invoke();
+                Console.WriteLine($@"res={res}");
+                //return res;
+            }));
+            Console.WriteLine("主线程完成");
+            //
+        }
+
+        private Func<T> ThreadWithReturn<T>(Func<T> func)
+        {
+            T res = default(T);
+
+            ThreadStart threadStart = () => { res = func.Invoke(); };
+            Thread thread = new Thread(threadStart);
+            thread.Start();
+            return new Func<T>((() => {
+                thread.Join();
+                return res;
+            }));
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            ThreadPool.SetMaxThreads(8, 8);
+            ManualResetEvent mre=new ManualResetEvent(false);
+            Console.WriteLine(Environment.ProcessorCount);
+            for (int i = 0; i < 10; i++)
+            {
+                int k = i;
+                ThreadPool.QueueUserWorkItem((state =>
+                {
+                    Console.WriteLine($@"threadid={Thread.CurrentThread.ManagedThreadId.ToString("00")} is running");
+                    if (k == 9)
+                    {
+                        mre.Set();
+                        mre.Reset();
+                    }
+                    else
+                    {
+                        mre.WaitOne();
+                    }
+                }));
+            }
+
+            if (mre.WaitOne())
+            {
+                Console.WriteLine("all finfished");
             }
         }
     }
