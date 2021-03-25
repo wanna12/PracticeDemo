@@ -62,7 +62,7 @@ namespace ConsoleApp1.TaskPratice
                                               firstEventFinished = true;
                                               string content = "天龙八部就此拉开序幕。。。。";
                                               Console.WriteLine(content);
-                                              LogHelper.CurrentInstance.LogActionInfo(content, 0, 0);
+                                              LogHelper.CurrentInstance.LogActionInfo(new LogModel(content, 0, 0));
                                           }
 
                                       }), tokenSource.Token);
@@ -89,7 +89,7 @@ namespace ConsoleApp1.TaskPratice
                     while (!tokenSource.IsCancellationRequested)
                     {
                         int timespan = new Random(Guid.NewGuid().GetHashCode()).Next(0,10000);
-                        LogHelper.CurrentInstance.LogActionInfo($"Thread={Thread.CurrentThread.ManagedThreadId} 监控线程间隔时间{timespan}ms", 0, 0);
+                        LogHelper.CurrentInstance.LogActionInfo(new LogModel($"Thread={Thread.CurrentThread.ManagedThreadId} 监控线程间隔时间{timespan}ms", 0, 0));
                         if (timespan == DateTime.Now.Year)
                         {
                             tokenSource.Cancel();
@@ -98,27 +98,27 @@ namespace ConsoleApp1.TaskPratice
                     }
                     string content = "天降雷霆灭世，天龙八部的故事就此结束....";
                     Console.WriteLine($"ThreadId={Thread.CurrentThread.ManagedThreadId} {content}");
-                    LogHelper.CurrentInstance.LogActionInfo(content, 0, 0);
+                    LogHelper.CurrentInstance.LogActionInfo(new LogModel(content, 0, 0));
                 }), tokenSource.Token);
 
                 taskFactory.ContinueWhenAny(pTasks.ToArray(), (task =>
                 {
                     string content = $"{task.Result}已经准备好了";
                     Console.WriteLine(content);
-                    LogHelper.CurrentInstance.LogActionInfo(content, 0, 0);
+                    LogHelper.CurrentInstance.LogActionInfo(new LogModel(content, 0, 0));
                 }), tokenSource.Token);
                 var action = new Action<Task<string>[]>(task =>
                   {
                       string content = "中原群雄大战辽兵，忠义两难一死谢天";
                       Console.WriteLine(content);
-                      LogHelper.CurrentInstance.LogActionInfo(content, 0, 0);
+                      LogHelper.CurrentInstance.LogActionInfo(new LogModel(content, 0, 0));
                   });
                 action += (task =>
                 {
                     stopwatch.Stop();
                     string content = $"天龙八部的故事耗时{stopwatch.ElapsedMilliseconds}ms";
                     Console.WriteLine(content);
-                    LogHelper.CurrentInstance.LogActionInfo(content, 0, 0);
+                    LogHelper.CurrentInstance.LogActionInfo(new LogModel(content, 0, 0));
                 });
                 taskFactory.ContinueWhenAll(pTasks.ToArray(), action, tokenSource.Token);
                 Console.ReadKey();
@@ -151,7 +151,7 @@ namespace ConsoleApp1.TaskPratice
             string content = $"ThreadId={Task.CurrentId} {name} 已完成事件——{eventname}";
             Console.WriteLine(content);
             //记录日志
-            LogHelper.CurrentInstance.LogActionInfo(content, 0, 0);
+            LogHelper.CurrentInstance.LogActionInfo(new LogModel(content, 0, 0));
 
             return new List<string>() { name, eventname };
         }

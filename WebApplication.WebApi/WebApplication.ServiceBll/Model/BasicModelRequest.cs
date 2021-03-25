@@ -12,5 +12,7 @@ namespace WebApplication.WebApi.Models
         public string o_time { get; set; }
         public string version { get; set; }
         public string c_port { get; set; }
+        public string user_id { get; set; }
+        public string funcName { get; set; }
     }
 }

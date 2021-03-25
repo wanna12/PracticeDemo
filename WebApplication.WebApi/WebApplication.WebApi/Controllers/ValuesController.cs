@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using WebApplication.Common.util;
 using WebApplication.ServiceBll.Model;
 using WebApplication.WebApi.Models;
 
@@ -44,14 +45,13 @@ namespace WebApplication.WebApi.Controllers
             List<int> resList = new List<int>();
             try
             {
-                dynamic obj = model.inputStr;
-                int x = int.Parse(obj);
-                
+                int x = int.Parse(model.inputStr);
                 resList.Add(x);
                 return BasicModelResponse<int>.GetSuccessEntity(resList);
             }
             catch (Exception e)
             {
+                LogHelper.Current.WriteErrorLog(model.inputStr, e);
                 return BasicModelResponse<int>.GetFailedEntity(resList, "执行失败", -1, -1);
             }
         }

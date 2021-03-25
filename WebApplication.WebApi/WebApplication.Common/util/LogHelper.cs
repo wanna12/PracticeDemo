@@ -17,6 +17,9 @@ namespace WebApplication.Common.util
             get { return instance; }
         }
 
+        private Queue<LogEnt> logQueue = new Queue<LogEnt>();
+        private static readonly object obj = new object();
+
         private static readonly ILog logInfo = LogManager.GetLogger("loginfo");
         private static readonly ILog logerror = LogManager.GetLogger("logerror");
 
@@ -24,21 +27,43 @@ namespace WebApplication.Common.util
         {
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin", "config", "logConfig.xml");
             log4net.Config.XmlConfigurator.Configure(new System.IO.FileInfo(path));
+            Task.Run(LogHandle);
         }
 
         public void WriteInfoLog(LogEnt ent)
         {
-//            if (logInfo.IsInfoEnabled)
+            lock (obj)
             {
-                logInfo.Info(JsonConvert.SerializeObject(ent));
+                logQueue.Enqueue(ent);
             }
+//            if (logInfo.IsInfoEnabled)
         }
 
-        public void WriteErrorLog(LogEnt ent, Exception ex)
+        public void WriteErrorLog(string msg, Exception ex)
         {
-            if (logerror.IsErrorEnabled)
+            logerror.Error(msg,ex);
+        }
+
+        private void LogHandle()
+        {
+            //可能这里不需要做队列处理？log4支持可以设置线程安全？
+            LogEnt logEnt = null;
+            try
             {
-                logerror.Error(JsonConvert.SerializeObject(ent),ex);
+                while (true)
+                {
+                    while (logQueue.Count > 0)
+                    {
+                        lock (obj)
+                        {
+                            logEnt = logQueue.Dequeue();
+                        }
+                        logInfo.Info(JsonConvert.SerializeObject(logEnt));
+                    }
+                }
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.StackTrace);
             }
         }
     }
@@ -49,13 +74,15 @@ namespace WebApplication.Common.util
         public string in_param { get; set; }
         public string out_param { get; set; }
         public long spent_time { get; set; }
+        public string user_id { get; set; }
 
-        public LogEnt(string func, string in_param, string out_param,long spentTime)
+        public LogEnt(string func,string user_id, string in_param, string out_param,long spentTime)
         {
             this.func = func;
             this.in_param = in_param;
             this.out_param = out_param;
             this.spent_time = spentTime;
         }
+        public LogEnt() { }
     }
 }

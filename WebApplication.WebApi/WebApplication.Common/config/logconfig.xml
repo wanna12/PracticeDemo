@@ -30,6 +30,7 @@
       <StaticLogFileName value="false" /> <!--是否使用静态文件名-->
       <DatePattern value="yyyyMMdd" /> <!--日志文件名-->
       <RollingStyle value="Date" /> <!--文件创建的方式，这里是以Date方式创建-->
+      <!-- <lockingModel type="log4net.Appender.FileAppender+MinimalLock" /> -->
       <!--错误日志布局-->
       <layout type="log4net.Layout.PatternLayout">
         <param name="ConversionPattern" value="[%thread] - %d %message%newline"/>
@@ -47,6 +48,7 @@
       <StaticLogFileName value="false" />
       <DatePattern value="yyyyMMdd" />
       <RollingStyle value="Date" />
+      <!-- <lockingModel type="log4net.Appender.FileAppender+MinimalLock" /> -->
       <!--信息日志布局-->
       <layout type="log4net.Layout.PatternLayout">
         <param name="ConversionPattern" value="[%thread] - %d %message%n"  />

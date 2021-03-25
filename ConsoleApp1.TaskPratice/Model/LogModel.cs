@@ -15,6 +15,8 @@ namespace ConsoleApp1.TaskPratice
 
         public string msg;
 
+        public LogModel() { }
+
         public LogModel(string msg, int status, int errCode)
         {
             this.msg = msg;
