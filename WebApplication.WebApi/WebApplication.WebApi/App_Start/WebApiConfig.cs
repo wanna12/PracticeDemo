@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.Cors;
+using System.Web.UI.WebControls;
 using WebApplication.WebApi.Filter;
+using RouteParameter = System.Web.Http.RouteParameter;
 
 namespace WebApplication.WebApi
 {
@@ -11,7 +14,11 @@ namespace WebApplication.WebApi
         public static void Register(HttpConfiguration config)
         {
             // Web API configuration and services
-            
+            config.EnableCors(new EnableCorsAttribute("*", "*","GET,PUT,POST")
+            {
+                SupportsCredentials = true
+            });
+            config.Filters.Add(new CheckActionFilter());
             // Web API routes
             config.MapHttpAttributeRoutes();
 
@@ -20,7 +27,7 @@ namespace WebApplication.WebApi
                 routeTemplate: "api/{controller}/{action}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
-            config.Filters.Add(new LogFilter());
+            //config.Filters.Add(new LogFilter());
         }
     }
 }

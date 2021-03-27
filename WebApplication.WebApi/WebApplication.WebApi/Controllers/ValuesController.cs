@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
+using WebApplication.Common.model;
 using WebApplication.Common.util;
 using WebApplication.ServiceBll.Model;
 using WebApplication.WebApi.Models;
@@ -39,21 +41,36 @@ namespace WebApplication.WebApi.Controllers
         {
         }
 
-        [HttpPost]
-        public BasicModelResponse<int> testMethod(TestMethodRequest model)
+        [HttpGet]
+        public BasicModelResponse<int> testMethod()
         {
             List<int> resList = new List<int>();
             try
             {
-                int x = int.Parse(model.inputStr);
+                int x = int.Parse("100");
                 resList.Add(x);
                 return BasicModelResponse<int>.GetSuccessEntity(resList);
             }
             catch (Exception e)
             {
-                LogHelper.Current.WriteErrorLog(model.inputStr, e);
+               // LogHelper.Current.WriteErrorLog(model.inputStr, e);
                 return BasicModelResponse<int>.GetFailedEntity(resList, "执行失败", -1, -1);
             }
+        }
+
+        [HttpGet]
+        public BasicModelResponse<string> getTestMethod([FromBody]TestMethodRequest model)
+        {
+            return new BasicModelResponse<string>(){Data = new List<string>(){"hello"}};
+        }
+
+        public BasicModelResponse<LoginResponse> getSession()
+        {
+            string session = Guid.NewGuid().ToString();
+            SimpleCacheHelper<string>.AddCache("session",session);
+            
+            return new BasicModelResponse<LoginResponse>()
+                {Data = new List<LoginResponse>() {new LoginResponse() {session = session}}};
         }
     }
 }

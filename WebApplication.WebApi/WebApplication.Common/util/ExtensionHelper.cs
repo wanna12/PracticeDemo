@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -38,6 +40,16 @@ namespace WebApplication.Common.util
                    }
                }
            }
+        }
+
+        public static byte[] ObjectToByteArray<T>(T obj)
+        {
+            BinaryFormatter bf=new BinaryFormatter();
+            MemoryStream stream=new MemoryStream();
+            bf.Serialize(stream,obj);
+            byte[] data = stream.ToArray();
+            stream.Dispose();
+            return data;
         }
     }
 }
